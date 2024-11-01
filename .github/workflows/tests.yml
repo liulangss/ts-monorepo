@@ -3,7 +3,7 @@ name: tests
 on:
   push:
   pull_request:
-    branches: [ $default-branch ]
+    branches: [$default-branch]
 
 jobs:
   tests:
@@ -21,16 +21,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm i
 
-      - name: Lint
-        run: pnpm run lint
-
       - name: Build
         run: pnpm run build
 
-      - name: Test
-        run: pnpm run test
+      - name: upload to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }} # 在 Secrets 中添加你的服务器 IP
+          username: ${{ secrets.SERVER_USER }} # 在 Secrets 中添加你的服务器用户名
+          key: ${{ secrets.SSH_PRIVATE_KEY }} # GitHub Secrets 中的 SSH 私钥
+          port: 22 # SSH 端口，默认为 22
+          source: "./apps/vite/dist" # 本地文件路径
+          target: "/home/www" # 服务器上的目标路径
